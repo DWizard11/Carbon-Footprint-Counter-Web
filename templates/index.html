@@ -1,0 +1,22 @@
+<!DOCTYPE html> 
+<html> 
+    <head>
+        <meta charset='utf-8'>
+        <title>Carbon Counter</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        
+    </head>
+
+    <body>
+        <h1>Carbon Footprint Counter</h1>
+        <p>Current Date: {{ today }} </p>
+        <hr>
+        <h2>Daily Tip to reduce Carbon Footprint:</h2>
+        <ul>
+            {% for tip in tips %}
+                <li>{{ tip }}</li>
+            {% endfor %}
+        </ul>
+    </body>
+
+</html>
