@@ -31,6 +31,13 @@ def index():
     
     return render_template('index.html', today=today, tips=tips)
 
+@app.route('/add_item', methods=['GET']) 
+def add_item(): 
+
+    return render_template('add_item.html') 
+
+    
+    
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
