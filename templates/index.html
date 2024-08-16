@@ -10,13 +10,16 @@
     <body>
         <h1>Carbon Footprint Counter</h1>
         <p>Current Date: {{ today }} </p>
-
-        <form method="GET"> 
-            
-            <input type='submit' value='Add Item'> 
-        </form>
-
-
+        {% for log in logs %}
+            <ul> 
+                <li>Activity: {{ log[1] }}</li>
+                <li>Carbon Footprint: {{ log [2] }}</li>
+                <li>Notes: {{ log[3] }}</li>
+                
+            </ul>
+        <hr>
+        {% endfor %}
+        <a href="{{ url_for('add_item') }}">Add New Log</a>
         
         <hr>
         <h2>Daily Tip to reduce Carbon Footprint:</h2>

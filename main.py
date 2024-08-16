@@ -27,14 +27,25 @@ def get_logs():
 @app.route('/', methods=["POST", "GET"])
 def index():
     logs = get_logs()
-
     
-    return render_template('index.html', today=today, tips=tips)
+    
+    return render_template('index.html', logs=logs, today=today, tips=tips)
 
-@app.route('/add_item', methods=['GET']) 
+@app.route('/add_item', methods=['GET', 'POST']) 
 def add_item(): 
-
-    return render_template('add_item.html') 
+    if request.method == 'POST':
+        activity = request.form['activity']
+        footprint = request.form['footprint']
+        notes = request.form['notes']
+    
+        # file closes after with block 
+        with open('logs.csv', 'a') as file: 
+            writer = csv.writer(file)
+           
+            writer.writerow([today, activity, footprint, notes])
+        return redirect(url_for('index'))
+    else: 
+        return render_template('add_item.html') 
 
     
     
