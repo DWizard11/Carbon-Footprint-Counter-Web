@@ -62,7 +62,11 @@ def get_logs():
 
 @app.route('/', methods=["POST", "GET"])
 def index():
-    logs, total_footprint, log_diff = get_logs()
+    fileEmpty = os.stat('logs.csv').st_size == 0
+    if not fileEmpty:
+        logs, total_footprint, log_diff = get_logs()
+    else: 
+        logs, total_footprint, log_diff = ({}, 0, 0)
     tip = random.choice(tips)
     
     
@@ -70,17 +74,21 @@ def index():
 
 @app.route('/add_item', methods=['GET', 'POST']) 
 def add_item(): 
+    fileEmpty = os.stat('logs.csv').st_size == 0
     if request.method == 'POST':
         global selected_date
         activity = request.form['activity']
         footprint = request.form['footprint']
         notes = request.form['notes']
-    
+        
         # file closes after with block 
         with open('logs.csv', 'a') as file: 
+            headers = ['Date', 'Activity', 'Footprint', 'Notes']
             writer = csv.writer(file)
-           
+            if fileEmpty: 
+                writer.writerow(headers)
             writer.writerow([selected_date, activity, footprint, notes])
+        
         return redirect(url_for('index'))
     else: 
         return render_template('add_item.html') 
@@ -96,7 +104,21 @@ def before_date():
     global selected_date 
     selected_date -= timedelta(days=1)
     return redirect(url_for('index'))
-    
+
+@app.route('/delete_log', methods=['GET'])
+def delete_log():
+    # file closes after with block 
+    with open("logs.csv", "r") as file: 
+        reader = csv.reader(file)
+        org_logs = []
+        for line in reader: 
+            org_logs.append(line)
+    # file closes after with block 
+    with open("logs.csv", "w") as file:
+        writer = csv.writer(file)
+        writer.writerows(org_logs[:-1])
+
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

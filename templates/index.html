@@ -39,7 +39,11 @@
 
     <a href="{{ url_for('add_item') }}" class="centered-link">Add New Log</a>
     <button class='centered-link' id='openDialog'>Summarise Logs</button>
-
+    
+    <form action="/delete_log" method="GET">
+        <button name="delete" type="submit">Delete last entry</button>   
+    </form>
+    
     <dialog id='summarisedDialog'>
         <h1>Summarised Logs: </h1>
         <p>Your total calculated Carbon Footprint of the Day is {{ total_footprint }} kg</p>
