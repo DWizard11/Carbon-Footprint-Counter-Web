@@ -24,54 +24,40 @@ global average_log
 average_log = 732.9
 
 
-today = datetime.today().date()
+today = datetime.now().date()
 global selected_date 
 selected_date = today 
 
-def get_logs(): 
-    total_footprint = 0
-    with open('logs.csv', 'r') as file: 
-        logs = {}
-        reader = csv.reader(file) 
-        next(reader)  # Skip header
-        log_csv = []
 
-        for line in reader: 
-            if not line[0]: 
-                return logs
-            log_csv.append(line)
+def get_logs():
+    total_footprint = 0
+    logs = {}
+
+    with open('logs.csv', 'r') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip header
+
+        log_csv = list(reader)
 
         for i in range(len(log_csv)):
-            date = datetime.strptime(log_csv[i][0], "%Y-%m-%d")
+            # Read and parse the current line
+            date = datetime.strptime(log_csv[i][0], "%Y-%m-%d").date()
             activity = log_csv[i][1]
             footprint = log_csv[i][2]
             notes = log_csv[i][3]
-            total_footprint += int(footprint)
 
-            if i == len(log_csv) - 1:  # Last line
-                if date not in logs: 
-                    logs[date.date()] = [[activity, footprint, notes]]
-                else: 
-                    logs[date.date()].append([activity, footprint, notes])
-                continue
+            # Calculate total footprint
+            total_footprint += int(footprint) if footprint else 0
 
-            next_date = datetime.strptime(log_csv[i+1][0], "%Y-%m-%d")
-            if date == next_date:
-                if date not in logs: 
-                    logs[date.date()] = [[activity, footprint, notes]]
-                else: 
-                    logs[date.date()].append([activity, footprint, notes])
+            # Handle adding logs to dictionary
+            if date not in logs:
+                logs[date] = [[activity, footprint, notes]]
             else:
-                if date not in logs: 
-                    logs[date.date()] = [[activity, footprint, notes]]
-                else: 
-                    logs[date.date()].append([activity, footprint, notes])
+                logs[date].append([activity, footprint, notes])
 
-        print(logs)
-        log_diff = abs(average_log - total_footprint)
-        
-        return (logs, total_footprint, log_diff)
+    log_diff = abs(average_log - total_footprint)
 
+    return (logs, total_footprint, log_diff)
 
 
 @app.route('/', methods=["POST", "GET"])
@@ -85,7 +71,7 @@ def index():
 @app.route('/add_item', methods=['GET', 'POST']) 
 def add_item(): 
     if request.method == 'POST':
-        
+        global selected_date
         activity = request.form['activity']
         footprint = request.form['footprint']
         notes = request.form['notes']
@@ -94,7 +80,7 @@ def add_item():
         with open('logs.csv', 'a') as file: 
             writer = csv.writer(file)
            
-            writer.writerow([datetime.strftime(today, '%Y-%m-%d'), activity, footprint, notes])
+            writer.writerow([selected_date, activity, footprint, notes])
         return redirect(url_for('index'))
     else: 
         return render_template('add_item.html') 

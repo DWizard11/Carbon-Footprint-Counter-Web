@@ -1,55 +1,58 @@
 <!DOCTYPE html> 
 <html> 
-    <head>
-        <meta charset='utf-8'>
-        <title>Carbon Counter</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-        
-        
-    </head>
+<head>
+    <meta charset='utf-8'>
+    <title>Carbon Counter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
 
-    <body>
-        <h1>Carbon Footprint Counter</h1>
-        <p>Current Date: {{ today }} </p>
-        <p>Selected Date: {{ selected_date }}</p>
-        {% for log in logs[selected_date] %}
-            <ul> 
-                <li>Activity: {{ log[1] }}</li>
-                <li>Carbon Footprint: {{ log [2] }}</li>
-                <li>Notes: {{ log[3] }}</li>
-                
-            </ul>
-        <hr>
-        {% endfor %}
-        <form action='{{ url_for("add_date") }}' method='GET'> 
-            <button type="submit">Next Date</button>
-        </form>
+<body>
+    <h1>Carbon Footprint Counter</h1>
+    <div class="tip-block">
+        <h2>Daily Tip to Reduce Carbon Footprint:</h2>
+        <p>{{ tip }}</p>
+    </div>
+    <div class="date-container">
         <form action='{{ url_for("before_date") }}' method='GET'> 
             <button type="submit">Before Date</button>
         </form>
-        <br>
-        <a href="{{ url_for('add_item') }}">Add New Log</a>
-        <button id='openDialog'>Summarise Logs</button>
 
-        <dialog id='summarisedDialog'>
-            <h1>Summarised Logs: </h1>
-            <p>Your total calculated Carbon Footprint of the Day is {{ total_footprint }} kg</p>
-            {% if log_diff < average_log %}
-                <p>You have used {{ log_diff }} less than the Singapore Average Carbon Footprint of {{ average_log }} kg</p>
-            {% else %}
-                <p>You have used {{ log_diff }} kg more than the Singapore Average Carbon Footprint of {{ average_log }} kg</p>
-            {% endif %}
-            <button id='closeDialog'>Close</button>
-            
-        </dialog>
-
-
+        <div class="date-info">
+            <p>Current Date: {{ today }} </p>
+            <p>Selected Date: {{ selected_date }}</p>
+        </div>
         
-        <hr>
-        <h2>Daily Tip to reduce Carbon Footprint:</h2>
-        <p>{{ tip }}</p>
+        <form action='{{ url_for("add_date") }}' method='GET'> 
+            <button type="submit">Next Date</button>
+        </form>
+    </div>
 
-        <script src="{{ url_for('static', filename='src.js') }}"></script>
-    </body>
+    {% for log in logs[selected_date] %}
+        <div class="log-item">
+            <p><strong>Activity:</strong> {{ log[0] }}</p>
+            <p><strong>Carbon Footprint:</strong> {{ log[1] }}</p>
+            <p><strong>Notes:</strong> {{ log[2] }}</p>
+        </div>
+       
+    {% endfor %}
+    <hr>
 
+    <a href="{{ url_for('add_item') }}" class="centered-link">Add New Log</a>
+    <button class='centered-link' id='openDialog'>Summarise Logs</button>
+
+    <dialog id='summarisedDialog'>
+        <h1>Summarised Logs: </h1>
+        <p>Your total calculated Carbon Footprint of the Day is {{ total_footprint }} kg</p>
+        {% if log_diff < average_log %}
+            <p>You have used {{ log_diff }} kg less than the Singapore Average Carbon Footprint of {{ average_log }} kg</p>
+        {% else %}
+            <p>You have used {{ log_diff }} kg more than the Singapore Average Carbon Footprint of {{ average_log }} kg</p>
+        {% endif %}
+        <button id='closeDialog'>Close</button>
+    </dialog>
+
+
+    
+    <script src="{{ url_for('static', filename='src.js') }}"></script>
+</body>
 </html>
