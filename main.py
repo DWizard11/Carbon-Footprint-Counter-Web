@@ -1,10 +1,25 @@
 from flask import Flask, render_template, redirect, url_for, request
 import csv
 from datetime import date
+import random 
 
 
 app = Flask(__name__)
-tips = ["Switch off the lights when not in use"]
+tips = [
+    "Switch off the lights when not in use", 
+    "Keep air-conditioner at higher temperatures, or just use a fan", 
+    "Limit the use of air travel", 
+    "Unplug appliances that are not in use", 
+    "Turn off electrical devices when not in use", 
+    "Take shorter showers", 
+    "Take the public transport or consider walking instead of using a car", 
+    "Use LED lights instead of incandescent lights",
+    "Limit the use of air travel", 
+    "Air-dry your clothes instead of using a clothes dryer", 
+    "Make use of natural light as much as possible"
+       
+       ]
+
 today = date.today()
 
 def get_logs(): 
@@ -47,11 +62,18 @@ def add_item():
     else: 
         return render_template('add_item.html') 
 
-    
+
     
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
 
 # General posisble changes: 
-# 1. Use random module for tips? 
+# 1. Use random module for tips (daily tips) 
+
+# Main Functionality Checklist
+# 1. Add login page 
+# 2. Setup account and SQL database
+# 3. Summariser (use alert somehow) 
+# 4. Add before date after date 
+

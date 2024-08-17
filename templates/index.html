@@ -5,6 +5,7 @@
         <title>Carbon Counter</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
         
+        
     </head>
 
     <body>
@@ -20,14 +21,22 @@
         <hr>
         {% endfor %}
         <a href="{{ url_for('add_item') }}">Add New Log</a>
+        <button id='openDialog'>Summarise Logs</button>
+
+        <dialog id='summarisedDialog'>
+            <h1>Summarised Logs: </h1>
+            <p>Congrats you made this dialog well done!</p>
+            <button id='closeDialog'>Close</button>
+            
+        </dialog>
+
+
         
         <hr>
         <h2>Daily Tip to reduce Carbon Footprint:</h2>
-        <ul>
-            {% for tip in tips %}
-                <li>{{ tip }}</li>
-            {% endfor %}
-        </ul>
+        <p>{{ tip }}</p>
+
+        <script src="{{ url_for('static', filename='src.js') }}"></script>
     </body>
 
 </html>
