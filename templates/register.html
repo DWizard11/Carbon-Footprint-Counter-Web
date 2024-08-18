@@ -3,26 +3,27 @@
     <head>
         <meta charset='utf-8'>
         <title>Register User</title>
-        
+        <link rel="stylesheet" href="{{ url_for('static', filename='register_style.css') }}">
     </head>
 
     <body>
-
-        <h1>Register User</h1>
-        <form method='POST'>
-            <label for='username'>Username: </label>
-            <input type='text' name='username' required><br><br>
-            <label for='password'>Password: </label>
-            <input type='password' name='password' required><br><br>
-            <label for='repassword'>Password: </label>
-            <input type='password' name='repassword' required><br><br>
-            
-            <input type='submit' value='Register'>
-        </form>
-
-        {% if message %}
-            <h2>{{ message }}</h2>
-        {% endif %}
+        <div class='container'>
+            <h1>Register User</h1>
+            <form method='POST'>
+                <label for='username'>Username: </label>
+                <input type='text' name='username' required><br><br>
+                <label for='password'>Password: </label>
+                <input type='password' name='password' required><br><br>
+                <label for='repassword'>Re-enter Password: </label>
+                <input type='password' name='repassword' required><br><br>
+                
+                <input type='submit' value='Register'>
+            </form>
+    
+            {% if message %}
+                <h2>{{ message }}</h2>
+            {% endif %}
+        </div>
     </body>
 
 </html>
