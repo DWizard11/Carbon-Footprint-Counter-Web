@@ -11,3 +11,23 @@ openButton.addEventListener('click', function() {
 closeButton.addEventListener('click', function() {
   dialog.close();
 });
+
+// Logout after inactivity 
+var timeoutDuration = 5 * 60 * 1000; // 30 minutes
+var timeout;
+
+function resetTimeout() {
+    clearTimeout(timeout);
+    timeout = setTimeout(logout, timeoutDuration);
+}
+
+function logout() {
+    window.location.href = "/logout";
+}
+
+window.onload = function() {
+    resetTimeout();
+    document.onmousemove = resetTimeout;
+    document.onkeypress = resetTimeout;
+    document.ontouchstart = resetTimeout;
+};

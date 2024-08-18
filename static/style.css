@@ -67,7 +67,7 @@ li {
     color: #2c3e50;
 }
 /* Button Styles */
-button, a {
+button, a, #logout {
     display: inline-block;
     padding: 10px 20px;
     margin: 10px 5px;
@@ -81,7 +81,7 @@ button, a {
     transition: background-color 0.3s ease;
 }
 
-button:hover, a:hover {
+button:hover, a:hover, #logout:hover {
     background-color: #1FA47B;
 }
 

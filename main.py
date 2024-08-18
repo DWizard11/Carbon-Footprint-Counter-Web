@@ -7,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os.path
 import uuid 
+from functools import wraps
 
 
 
@@ -39,6 +40,14 @@ today = datetime.now().date()
 global selected_date 
 selected_date = today 
 
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 def get_logs(csvfile):
     total_footprint = 0
@@ -101,6 +110,13 @@ def read_db():
     print(user_data)
     conn.close()
     return user_data
+    
+@app.before_request
+def before_request():
+    protected_routes = ['home', 'add_item', 'delete_log', 'index']
+
+    if 'user_id' not in session and request.endpoint in protected_routes:
+        return redirect(url_for('login'))
 
 @app.route("/")
 def index(): 
@@ -137,6 +153,7 @@ def login():
     return render_template("login.html", message="")
     
 @app.route('/home', methods=["POST", "GET"])
+@login_required
 def home():
     if 'user_id' not in session:
         return redirect(url_for('login'))
