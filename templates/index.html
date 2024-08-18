@@ -39,7 +39,7 @@
 
     <div class="button-container">
         <a href="{{ url_for('add_item') }}">Add New Log</a>
-        <form action="/delete_log" method="GET" style="display: inline;">
+        <form action="{{ url_for ('delete_log')}}" method="GET" style="display: inline;">
             <button  name="delete" type="submit">Delete last log</button>   
         </form>
     </div>
@@ -60,7 +60,10 @@
         {% endif %}
         <button id='closeDialog'>Close</button>
     </dialog>
-
+    <hr>
+    <form action="{{ url_for('logout') }}" method="POST">
+        <input type='submit' value='Log Out'>
+    </form>
 
     
     <script src="{{ url_for('static', filename='src.js') }}"></script>
