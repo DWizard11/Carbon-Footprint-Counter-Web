@@ -159,3 +159,15 @@ hr {
     font-size: 18px;
     color: #333;
 }
+
+.button-container {
+    display: flex;
+    gap: 5 px; /* Adjust as needed for spacing between buttons */
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+

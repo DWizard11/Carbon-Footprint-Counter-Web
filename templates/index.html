@@ -37,12 +37,18 @@
     {% endfor %}
     <hr>
 
-    <a href="{{ url_for('add_item') }}" class="centered-link">Add New Log</a>
+    <div class="button-container">
+        <a href="{{ url_for('add_item') }}">Add New Log</a>
+        <form action="/delete_log" method="GET" style="display: inline;">
+            <button  name="delete" type="submit">Delete last log</button>   
+        </form>
+    </div>
+
+
+
+
     <button class='centered-link' id='openDialog'>Summarise Logs</button>
     
-    <form action="/delete_log" method="GET">
-        <button name="delete" type="submit">Delete last entry</button>   
-    </form>
     
     <dialog id='summarisedDialog'>
         <h1>Summarised Logs: </h1>

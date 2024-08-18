@@ -128,7 +128,7 @@ if __name__ == '__main__':
 
 # Main Functionality Checklist
 # 1. Add login page 
-# 2. Setup account and SQL database
+# 2. Setup account and SQL database 
 # 3. Summariser (use alert somehow) done 
 # 4. Add before date after date done
 
