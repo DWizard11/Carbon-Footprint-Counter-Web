@@ -6,10 +6,16 @@ import os
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os.path
+import uuid 
+
 
 
 app = Flask(__name__)
 app.secret_key = "penguins"
+
+global USER_CSV_DIR
+USER_CSV_DIR = 'user_csv_files'
+os.makedirs(USER_CSV_DIR, exist_ok=True)
 
 tips = [
     "Switch off the lights when not in use", 
@@ -34,12 +40,12 @@ global selected_date
 selected_date = today 
 
 
-def get_logs():
+def get_logs(csvfile):
     total_footprint = 0
     logs = {}
     
     # file closes after with block 
-    with open('logs.csv', 'r') as file:
+    with open(csvfile, 'r') as file:
         reader = csv.reader(file)
         next(reader)  # Skip header
 
@@ -73,7 +79,8 @@ def create_db():
         CREATE TABLE Users(
             UserID INTEGER PRIMARY KEY AUTOINCREMENT,
             Username TEXT NOT NULL,
-            Password TEXT NOT NULL
+            Password TEXT NOT NULL, 
+            CSVFile TEXT NOT NULL
         );
 
     """)
@@ -81,6 +88,19 @@ def create_db():
     conn.commit() # commit changes to the database
     conn.close()
     
+def read_db(): 
+    conn = sqlite3.connect('users.db')
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT * FROM USERS;
+
+    """)
+
+    user_data = cursor.fetchall()
+    print(user_data)
+    conn.close()
+    return user_data
 
 @app.route("/")
 def index(): 
@@ -100,23 +120,12 @@ def login():
         password = request.form.get("password")
 
         # Retrieve user data from the database
-        # Your database query code goes here
-        conn = sqlite3.connect('users.db')
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT * FROM USERS;
-            
-        """)
-        
-        user_data = cursor.fetchall()
-        print(user_data)
-        conn.close()
+        user_data = read_db()
         
         # Check if username exists and password is correct
         for user in user_data:
             if username in user and check_password_hash(user[2], password):
-                session["user_id"] = user[0]
+                session["user_id"] = user
                 print("IT RAN AAINN")
                 logged_in = True
                 return redirect(url_for('home'))
@@ -125,23 +134,31 @@ def login():
             print("NO TLOG IN")
             return render_template("login.html", message="Invalid username or password.")
 
-    return render_template("login.html")
+    return render_template("login.html", message="")
     
 @app.route('/home', methods=["POST", "GET"])
 def home():
-    fileEmpty = os.stat('logs.csv').st_size == 0
-    if not fileEmpty:
-        logs, total_footprint, log_diff = get_logs()
-    else: 
-        logs, total_footprint, log_diff = ({}, 0, 0)
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    if 'selected_date' not in session:
+        session['selected_date'] = datetime.now().date()
+        
+    csvfile = os.path.join(USER_CSV_DIR, session["user_id"][3])
+
+    if not os.path.isfile(csvfile):
+        return render_template('index.html', message="User data file not found.")
+        
+    logs, total_footprint, log_diff = get_logs(csvfile)
     tip = random.choice(tips)
     
-    
+
     return render_template('index.html', logs=logs, today=today, tip=tip, selected_date=selected_date, total_footprint=total_footprint, log_diff=log_diff, average_log=average_log)
+
 
 @app.route('/add_item', methods=['GET', 'POST']) 
 def add_item(): 
-    fileEmpty = os.stat('logs.csv').st_size == 0
+    csvfile = os.path.join(USER_CSV_DIR, session["user_id"][3])
     if request.method == 'POST':
         global selected_date
         activity = request.form['activity']
@@ -149,54 +166,66 @@ def add_item():
         notes = request.form['notes']
         
         # file closes after with block 
-        with open('logs.csv', 'a') as file: 
-            headers = ['Date', 'Activity', 'Footprint', 'Notes']
+        with open(csvfile, 'a') as file: 
             writer = csv.writer(file)
-            if fileEmpty: 
-                writer.writerow(headers)
             writer.writerow([selected_date, activity, footprint, notes])
         
-        return redirect(url_for('index'))
+        return redirect(url_for('home'))
     else: 
         return render_template('add_item.html') 
 
 @app.route('/add_date', methods=['GET'])
 def add_date(): 
-    global selected_date 
-    selected_date += timedelta(days=1)
-    return redirect(url_for('index'))
+    session['selected_date'] = session['selected_date'] + timedelta(days=1)
+    return redirect(url_for('home'))
 
 @app.route('/before_date', methods=['GET'])
 def before_date(): 
-    global selected_date 
-    selected_date -= timedelta(days=1)
-    return redirect(url_for('index'))
+    session['selected_date'] = session['selected_date'] - timedelta(days=1)
+    return redirect(url_for('home'))
 
 @app.route('/delete_log', methods=['GET'])
 def delete_log():
+    csvfile = os.path.join(USER_CSV_DIR, session["user_id"][3])
     # file closes after with block 
-    with open("logs.csv", "r") as file: 
+    with open(csvfile, "r") as file: 
         reader = csv.reader(file)
         org_logs = []
         for line in reader: 
             org_logs.append(line)
     # file closes after with block 
-    with open("logs.csv", "w") as file:
+    with open(csvfile, "w") as file:
         writer = csv.writer(file)
         writer.writerows(org_logs[:-1])
 
-    return redirect(url_for('index'))
+    return redirect(url_for('home'))
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    user_data = read_db()
     if request.method == "POST":
         # Validate form data
         username = request.form["username"]
         password = request.form["password"]
+        repassword = request.form["repassword"]
 
         if not (username and password):
             return render_template("register.html", message="All fields are required.")
+        for user in user_data: 
+            if username in user:
+                return render_template("register.html", message="Username already exists.")
+        if repassword != password: 
+            return render_template("register.html", message="Passwords do not match.")
+                
+        filename =  f"{username}_{uuid.uuid4().hex}.csv"
+        filepath = os.path.join(USER_CSV_DIR, filename)
+
+        # Saving user data to csv file
+        with open(filepath, "w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Date", "Activity", "Footprint", "Notes"]) # Header 
+            
 
         # Hash the password
         hashed_password = generate_password_hash(password)
@@ -207,17 +236,17 @@ def register():
         cursor = conn.cursor()
 
         cursor.execute("""
-            INSERT INTO Users (Username, Password) 
-            VALUES (?, ?);
+            INSERT INTO Users (Username, Password, CSVFile) 
+            VALUES (?, ?, ?);
             
-        """, (username, hashed_password))
+        """, (username, hashed_password, filename))
 
         conn.commit()
         conn.close()
         
         return redirect(url_for('login'))
      
-    return render_template("register.html")
+    return render_template("register.html", message="")
 
 
 
@@ -235,7 +264,7 @@ if __name__ == '__main__':
 # 1. Use random module for tips (daily tips) doen
 
 # Main Functionality Checklist
-# 1. Add login page 
+# 1. Add login page done  
 # 2. Setup account and SQL database 
 # 3. Summariser (use alert somehow) done 
 # 4. Add before date after date done

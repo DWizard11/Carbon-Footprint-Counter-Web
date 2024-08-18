@@ -53,7 +53,7 @@
     <dialog id='summarisedDialog'>
         <h1>Summarised Logs: </h1>
         <p>Your total calculated Carbon Footprint of the Day is {{ total_footprint }} kg</p>
-        {% if log_diff < average_log %}
+        {% if total_footprint < average_log %}
             <p>You have used {{ log_diff }} kg less than the Singapore Average Carbon Footprint of {{ average_log }} kg</p>
         {% else %}
             <p>You have used {{ log_diff }} kg more than the Singapore Average Carbon Footprint of {{ average_log }} kg</p>
