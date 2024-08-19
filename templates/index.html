@@ -19,7 +19,7 @@
 
         <div class="date-info">
             <p>Current Date: {{ today }} </p>
-            <p>Selected Date: {{ selected_date }}</p>
+            <p>Selected Date: {{ formatted_date }}</p>
         </div>
         
         <form action='{{ url_for("add_date") }}' method='GET'> 
@@ -27,7 +27,7 @@
         </form>
     </div>
 
-    {% for log in logs[selected_date] %}
+    {% for log in logs[formatted_date] %}
         <div class="log-item">
             <p><strong>Activity:</strong> {{ log[0] }}</p>
             <p><strong>Carbon Footprint:</strong> {{ log[1] }}</p>

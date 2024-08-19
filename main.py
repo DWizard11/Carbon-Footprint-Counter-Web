@@ -1,24 +1,27 @@
-from flask import Flask, render_template, redirect, url_for, request, session
-import csv
+### 1. Importing Modules ###
 from datetime import datetime, timedelta
-import random 
-import os 
-from werkzeug.security import generate_password_hash, check_password_hash
+import csv
+import os
+import random
 import sqlite3
-import os.path
-import uuid 
+import uuid
 from functools import wraps
 
+from flask import Flask, render_template, redirect, url_for, request, session
+from werkzeug.security import generate_password_hash, check_password_hash
 
-
+### 2. Flask App Setup ###
 app = Flask(__name__, static_folder='static', static_url_path='/static')
-
 app.secret_key = "penguins"
 
+### 3. Variable Definitions ###
+
+## 3.1 CSV File Definition ##
 global USER_CSV_DIR
 USER_CSV_DIR = 'user_csv_files'
 os.makedirs(USER_CSV_DIR, exist_ok=True)
 
+## 3.2 Tips definiito 
 tips = [
     "Switch off the lights when not in use", 
     "Keep air-conditioner at higher temperatures, or just use a fan", 
@@ -37,7 +40,7 @@ global average_log
 average_log = 732.9
 
 
-today = datetime.now().date()
+today = datetime.now().strftime('%d %B %Y')
 global selected_date 
 selected_date = today 
 
@@ -63,7 +66,7 @@ def get_logs(csvfile):
 
         for i in range(len(log_csv)):
             # Read the current line
-            date = datetime.strptime(log_csv[i][0], "%Y-%m-%d").date()
+            date = log_csv[i][0]
             activity = log_csv[i][1]
             footprint = log_csv[i][2]
             notes = log_csv[i][3]
@@ -86,7 +89,7 @@ def create_db():
     cursor = conn.cursor()
 
     cursor.execute("""
-        CREATE TABLE Users(
+        CREATE TABLE IF NOT EXISTS Users(
             UserID INTEGER PRIMARY KEY AUTOINCREMENT,
             Username TEXT NOT NULL,
             Password TEXT NOT NULL, 
@@ -159,26 +162,50 @@ def home():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
+    
     if 'selected_date' not in session:
-        session['selected_date'] = datetime.now().date()
+        session['selected_date'] = datetime.now().isoformat()
+    else: 
+        selected_date_str = session.get('selected_date')
+
+        # Check if the date is in the format that caused the error
+        if selected_date_str:
+            try:
+                # Attempt to parse as ISO format
+                selected_date = datetime.fromisoformat(selected_date_str)
+            except ValueError:
+                # Handle the specific format 'Mon, 19 Aug 2024 00:00:00 GMT'
+                selected_date = datetime.strptime(selected_date_str, '%a, %d %b %Y %H:%M:%S %Z')
+            formatted_date = selected_date.strftime('%d %B %Y')
         
     csvfile = os.path.join(USER_CSV_DIR, session["user_id"][3])
 
     if not os.path.isfile(csvfile):
         return render_template('index.html', message="User data file not found.")
-        
+    
     logs, total_footprint, log_diff = get_logs(csvfile)
     tip = random.choice(tips)
     
-
-    return render_template('index.html', logs=logs, today=today, tip=tip, selected_date=selected_date, total_footprint=total_footprint, log_diff=log_diff, average_log=average_log)
+    print("HEHEHEHEHEHE", logs)
+    return render_template('index.html', logs=logs, today=today, tip=tip, selected_date=selected_date, formatted_date=formatted_date, total_footprint=total_footprint, log_diff=log_diff, average_log=average_log)
 
 
 @app.route('/add_item', methods=['GET', 'POST']) 
 def add_item(): 
     csvfile = os.path.join(USER_CSV_DIR, session["user_id"][3])
     if request.method == 'POST':
-        global selected_date
+        selected_date_str = session.get('selected_date')
+
+        # Check if the date is in the format that caused the error
+        if selected_date_str:
+            try:
+                # Attempt to parse as ISO format
+                selected_date = datetime.fromisoformat(selected_date_str)
+            except ValueError:
+                # Handle the specific format 'Mon, 19 Aug 2024 00:00:00 GMT'
+                selected_date = datetime.strptime(selected_date_str, '%a, %d %b %Y %H:%M:%S %Z')
+            formatted_date = selected_date.strftime('%d %B %Y')
+        
         activity = request.form['activity']
         footprint = request.form['footprint']
         notes = request.form['notes']
@@ -186,7 +213,7 @@ def add_item():
         # file closes after with block 
         with open(csvfile, 'a') as file: 
             writer = csv.writer(file)
-            writer.writerow([selected_date, activity, footprint, notes])
+            writer.writerow([formatted_date, activity, footprint, notes])
         
         return redirect(url_for('home'))
     else: 
@@ -194,12 +221,39 @@ def add_item():
 
 @app.route('/add_date', methods=['GET'])
 def add_date(): 
-    session['selected_date'] = session['selected_date'] + timedelta(days=1)
+    selected_date_str = session.get('selected_date')
+
+    # Check if the date is in the format that caused the error
+    if selected_date_str:
+        try:
+            # Attempt to parse as ISO format
+            selected_date = datetime.fromisoformat(selected_date_str)
+        except ValueError:
+            # Handle the specific format 'Mon, 19 Aug 2024 00:00:00 GMT'
+            selected_date = datetime.strptime(selected_date_str, '%a, %d %b %Y %H:%M:%S %Z')
+        
+    selected_date = selected_date + timedelta(days=1)
+
+    session['selected_date'] = selected_date.isoformat()
+    
     return redirect(url_for('home'))
 
 @app.route('/before_date', methods=['GET'])
 def before_date(): 
-    session['selected_date'] = session['selected_date'] - timedelta(days=1)
+    selected_date_str = session.get('selected_date')
+
+    # Check if the date is in the format that caused the error
+    if selected_date_str:
+        try:
+            # Attempt to parse as ISO format
+            selected_date = datetime.fromisoformat(selected_date_str)
+        except ValueError:
+            # Handle the specific format 'Mon, 19 Aug 2024 00:00:00 GMT'
+            selected_date = datetime.strptime(selected_date_str, '%a, %d %b %Y %H:%M:%S %Z')
+
+    selected_date = selected_date - timedelta(days=1)
+    session['selected_date'] = selected_date.isoformat()
+    
     return redirect(url_for('home'))
 
 @app.route('/delete_log', methods=['GET'])
