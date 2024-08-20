@@ -166,8 +166,8 @@ def home():
     
     if 'selected_date' not in session:
         session['selected_date'] = datetime.now().isoformat()
-    else: 
-        selected_date_str = session.get('selected_date')
+     
+    selected_date_str = session.get('selected_date')
 
     # Check if the date is in the format that caused the error
     if selected_date_str:
