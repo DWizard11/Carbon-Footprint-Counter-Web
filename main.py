@@ -59,6 +59,7 @@ def get_logs(csvfile):
     
     # file closes after with block 
     with open(csvfile, 'r') as file:
+        log_diffs = {}
         reader = csv.reader(file)
         next(reader)  # Skip header
 
@@ -168,15 +169,15 @@ def home():
     else: 
         selected_date_str = session.get('selected_date')
 
-        # Check if the date is in the format that caused the error
-        if selected_date_str:
-            try:
-                # Attempt to parse as ISO format
-                selected_date = datetime.fromisoformat(selected_date_str)
-            except ValueError:
-                # Handle the specific format 'Mon, 19 Aug 2024 00:00:00 GMT'
-                selected_date = datetime.strptime(selected_date_str, '%a, %d %b %Y %H:%M:%S %Z')
-            formatted_date = selected_date.strftime('%d %B %Y')
+    # Check if the date is in the format that caused the error
+    if selected_date_str:
+        try:
+            # Attempt to parse as ISO format
+            selected_date = datetime.fromisoformat(selected_date_str)
+        except ValueError:
+            # Handle the specific format 'Mon, 19 Aug 2024 00:00:00 GMT'
+            selected_date = datetime.strptime(selected_date_str, '%a, %d %b %Y %H:%M:%S %Z')
+        formatted_date = selected_date.strftime('%d %B %Y')
         
     csvfile = os.path.join(USER_CSV_DIR, session["user_id"][3])
 
